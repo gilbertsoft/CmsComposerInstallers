@@ -125,7 +125,7 @@ class PluginImplementation
             $this->composer
                 ->getInstallationManager()
                 ->removeInstaller(
-                    \Composer\Installers\Installer::class
+                    new \Composer\Installers\Installer($this->io, $this->composer)
                 );
             $rootPackage->setExtra($rootExtra);
             $this->composer
