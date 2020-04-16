@@ -122,13 +122,13 @@ class PluginImplementation
             $disabledInstallers[] = 'typo3-cms';
             $rootExtra['installer-disable'] = $disabledInstallers;
             // We need to remove the composer/installers and add it again to disable the installer
-            $composer
+            $this->composer
                 ->getInstallationManager()
                 ->removeInstaller(
                     \Composer\Installers\Installer::class
                 );
             $rootPackage->setExtra($rootExtra);
-            $composer
+            $this->composer
                 ->getInstallationManager()
                 ->addInstaller(
                     //IOInterface $io, Composer $composer, $type = 'library', Filesystem $filesystem = null, BinaryInstaller $binaryInstaller = null
