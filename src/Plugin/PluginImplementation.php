@@ -19,6 +19,7 @@ namespace TYPO3\CMS\Composer\Plugin;
  */
 
 use Composer\Composer;
+use Composer\IO\IOInterface;
 use Composer\Script\Event;
 use Composer\Semver\Constraint\EmptyConstraint;
 use TYPO3\CMS\Composer\Plugin\Config as PluginConfig;
@@ -47,6 +48,11 @@ class PluginImplementation
     private $includeFile;
 
     /**
+     * @var IOInterface
+     */
+    private $io;
+
+    /**
      * @var Composer
      */
     private $composer;
@@ -61,7 +67,7 @@ class PluginImplementation
         ScriptDispatcher $scriptDispatcher = null,
         IncludeFile $includeFile = null
     ) {
-        $io = $event->getIO();
+        $this->io = $event->getIO();
         $this->composer = $event->getComposer();
         $fileSystem = new Filesystem();
         $pluginConfig = PluginConfig::load($this->composer);
@@ -69,14 +75,14 @@ class PluginImplementation
         $this->scriptDispatcher = $scriptDispatcher ?: new ScriptDispatcher($event);
         $this->includeFile = $includeFile
             ?: new IncludeFile(
-                $io,
+                $this->io,
                 $this->composer,
                 [
-                    new BaseDirToken($io, $pluginConfig),
-                    new AppDirToken($io, $pluginConfig),
-                    new WebDirToken($io, $pluginConfig),
-                    new RootDirToken($io, $pluginConfig),
-                    new ComposerModeToken($io, $pluginConfig),
+                    new BaseDirToken($this->io, $pluginConfig),
+                    new AppDirToken($this->io, $pluginConfig),
+                    new WebDirToken($this->io, $pluginConfig),
+                    new RootDirToken($this->io, $pluginConfig),
+                    new ComposerModeToken($this->io, $pluginConfig),
                 ],
                 $fileSystem
             );
@@ -114,7 +120,20 @@ class PluginImplementation
         }
         if (!in_array('typo3-cms', $disabledInstallers, true)) {
             $disabledInstallers[] = 'typo3-cms';
+            $rootExtra['installer-disable'] = $disabledInstallers;
+            // We need to remove the composer/installers and add it again to disable the installer
+            $composer
+                ->getInstallationManager()
+                ->removeInstaller(
+                    \Composer\Installers\Installer::class
+                );
+            $rootPackage->setExtra($rootExtra);
+            $composer
+                ->getInstallationManager()
+                ->addInstaller(
+                    //IOInterface $io, Composer $composer, $type = 'library', Filesystem $filesystem = null, BinaryInstaller $binaryInstaller = null
+                    new \Composer\Installers\Installer($this->io, $this->composer)
+                );
         }
-        $rootPackage->setExtra($rootExtra);
     }
 }
