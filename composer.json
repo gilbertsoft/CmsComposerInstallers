@@ -45,7 +45,8 @@
     "extra": {
         "class": "TYPO3\\CMS\\Composer\\Installer\\Plugin",
         "branch-alias": {
-            "dev-master": "3.0.x-dev"
+            "dev-master": "3.0.x-dev",
+            "dev-feature/allow-composer-installers": "3.0.x-dev"
         }
     }
 }
